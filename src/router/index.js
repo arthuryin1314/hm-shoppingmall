@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
+import { getToken } from '@/store/index.js'
 import layoutFrame from '@/views/layout/layoutFrame.vue'
 import detail from '@/views/detail/detailIndex.vue'
 import login from '@/views/login/loginIndex.vue'
@@ -17,6 +18,7 @@ const routes = [
   {
     path: '/',
     component: layoutFrame,
+    redirect: '/home',
     children: [
       { path: '/home', component: home },
       { path: '/divideClass', component: divideClass },
@@ -24,7 +26,7 @@ const routes = [
       { path: '/myInfo', component: myInfo }
     ]
   },
-  { path: '/detail', component: detail },
+  { path: '/detail/:id', component: detail },
   { path: '/login', component: login },
   { path: '/management', component: management },
   { path: '/payment', component: payment },
@@ -35,5 +37,17 @@ const routes = [
 const router = new VueRouter({
   routes
 })
-
+const authUrl = ['/payment', 'myInfo']
+router.beforeEach((to, from, next) => {
+  if (!authUrl.includes(to.path)) {
+    next()
+  } else {
+    const token = getToken()
+    if (token) {
+      next()
+    } else {
+      next('/login')
+    }
+  }
+})
 export default router

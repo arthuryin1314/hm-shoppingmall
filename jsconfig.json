@@ -5,15 +5,16 @@
     "baseUrl": "./",
     "moduleResolution": "node",
     "paths": {
-      "@/*": [
-        "src/*"
-      ]
+      "@/*": ["src/*"]
     },
-    "lib": [
-      "esnext",
-      "dom",
-      "dom.iterable",
-      "scripthost"
-    ]
-  }
+    "lib": ["esnext", "dom", "dom.iterable", "scripthost"],
+    // 新增：指定 Vue 单文件组件的解析方式
+    "jsx": "preserve",
+    // 新增：允许导入 .vue 后缀的文件
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true
+  },
+  // 新增：指定需要解析的文件范围，排除不需要的目录
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "public"]
 }

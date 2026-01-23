@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1>Layout Frame</h1>
+    <!-- <h1>Layout Frame</h1> -->
     <router-view></router-view>
   </div>
 

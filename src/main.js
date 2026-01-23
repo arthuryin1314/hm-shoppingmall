@@ -5,6 +5,7 @@ import store from './store'
 // 1. 新增：引入 Message 组件
 import { Menu, MenuItem, Submenu, MenuItemGroup } from 'element-ui'
 // 2. 新增：引入 Message 对应的样式文件（按需引入必须加，否则样式会丢失）
+import 'element-ui/lib/theme-chalk/index.css'
 
 import tabBar from '@/components/tabBar.vue'
 import '@/styles/common.less'

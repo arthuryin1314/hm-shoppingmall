@@ -1,18 +1,13 @@
 <template>
   <div class="login-page">
     <!-- 标题栏 -->
-    <el-page-header content="详情页面" class="page-header" v-if="isShow"></el-page-header>
-
-    <div class="alert-wrapper">
-      <el-alert title="验证码提供好了" type="success" closable>
-      </el-alert>
-    </div>
+    <el-page-header content="详情页面" class="page-header"></el-page-header>
     <!-- 登录表单容器（负责居中） -->
     <div class="form-wrapper">
       <div class="form">
         <!-- 手机号输入框 -->
         <div class="form-item">
-          <input class="inp" maxlength="11" placeholder="请输入手机号码" type="tel">
+          <input class="inp" maxlength="11" placeholder="请输入手机号码" type="tel" v-model="telNum">
         </div>
 
         <!-- 图形验证码 -->
@@ -23,25 +18,25 @@
 
         <!-- 短信验证码 -->
         <div class="form-item code-item">
-          <input class="inp sms-inp" placeholder="请输入短信验证码" type="text">
+          <input class="inp sms-inp" placeholder="请输入短信验证码" type="text" v-model="smsCode">
           <button class="get-code-btn" @click="timerIndex">{{totalSeconds==second?'获取验证码':second+'秒后重试'}}</button>
         </div>
       </div>
 
       <!-- 登录按钮 -->
-      <div class="login-btn">登录</div>
+      <div class="login-btn" @click="loginIndex">登录</div>
     </div>
   </div>
 </template>
 
 <script>
-import { getPicCode } from '@/api/login.js'
-import { PageHeader, Alert } from 'element-ui'
-import 'element-ui/lib/theme-chalk/alert.css'
+import { getPicCode, login, sendSmsCode } from '@/api/login.js'
+import { PageHeader, Message } from 'element-ui'
+
+// import 'element-ui/lib/theme-chalk/alert.css'
 export default {
   components: {
-    ElPageHeader: PageHeader, // Element组件的标签名是el-page-header，对应注册名ElPageHeader,
-    ElAlert: Alert
+    ElPageHeader: PageHeader
   },
   data () {
     return {
@@ -49,9 +44,11 @@ export default {
       picKey: '',
       codeInput: '',
       isShow: false,
-      totalSeconds: 5,
-      second: 5,
-      timer: null
+      totalSeconds: 60,
+      second: 60,
+      timer: null,
+      telNum: '',
+      smsCode: ''
     }
   },
   created () {
@@ -63,10 +60,22 @@ export default {
       // console.log(res)
       this.picUrl = base64
       this.picKey = key
-      this.isShow = true
     },
-    timerIndex () {
-      if (!this.timer && this.second === this.totalSeconds) {
+    async timerIndex () {
+      if (!/^1[3-9]\d{9}$/.test(this.telNum)) {
+        // this.isShow = true
+        Message({
+          message: '手机号填写有误',
+          type: 'error'
+        })
+      } else if (!/^[0-9a-zA-Z]{4}$/.test(this.codeInput)) {
+        Message({
+          message: '图形验证码填写有误',
+          type: 'error'
+        })
+      } else if (!this.timer && this.second === this.totalSeconds) {
+        const res = await sendSmsCode(this.codeInput, this.picKey, this.telNum)
+        console.log(res)
         this.timer = setInterval(() => {
           this.second--
           if (this.second <= 0) {
@@ -75,6 +84,34 @@ export default {
             this.second = this.totalSeconds
           }
         }, 1000)
+      }
+    },
+    async loginIndex () {
+      if (this.smsCode.length === 0) {
+        Message({
+          message: '短信验证码不能为空',
+          type: 'error'
+        })
+      } else if (!/^1[3-9]\d{9}$/.test(this.telNum)) {
+        // this.isShow = true
+        Message({
+          message: '手机号填写有误',
+          type: 'error'
+        })
+      } else if (!/^[0-9a-zA-Z]{4}$/.test(this.codeInput)) {
+        Message({
+          message: '图形验证码填写有误',
+          type: 'error'
+        })
+      } else {
+        const res2 = await login(this.telNum, this.smsCode)
+        console.log(res2)
+        Message({
+          message: '登录成功',
+          type: 'success'
+        })
+        this.$store.commit('user/setUser', res2)
+        this.$router.push('/home')
       }
     }
   },
